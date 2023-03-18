@@ -1,3 +1,12 @@
+"""
+This code is for extracting AAA users information
+like username password and service type and the privilege 
+that they have.
+The script uses netmiko to connect to Routers via ssh.
+The script is mainly used for HUAWEI Routers but it can be modified to other vendors.
+"""
+
+
 from get_aaa_users_info import get_aaa_users_info
 from get_credentials import credentials
 from get_list_router import get_list_router
