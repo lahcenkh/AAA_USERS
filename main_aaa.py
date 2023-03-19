@@ -71,14 +71,14 @@ def main_aaa():
             list_aaa_user_info.append(users_info)
 
             connection.disconnect()
-            print("Done.")
+            print('\033[92m' + "Done.\n" + '\033[0m')
         # authentication error
         except auth_error:
-            print("Failed.")
+            print('\033[91m' + "Failed." + '\033[0m')
             print(f"\n===>> Authentication Failed to {device['RouterName']}, {device['IPAddress']}\n")
             list_errors.append(f"{device['RouterName']},{device['IPAddress']},Authentication Failed\n")
         except timeout_error:
-            print("Failed.")
+            print('\033[91m' + "Failed." + '\033[0m')
             print(f"\n===>> Connection Timeout to {device['RouterName']}, {device['IPAddress']}\n")
             list_errors.append(f"{device['RouterName']},{device['IPAddress']},Connection Timeout")
     # list of each router with its own users and info
@@ -107,3 +107,9 @@ if list_errors != []:
             f_error.write(error)
 
 #-------------------------------------------------------------------------
+
+# --------------------------- export router_aaa_users to json file --------
+if router_aaa_users != []:
+    with open("list_aaa_user.json", "w") as json_f:
+        json_f.write(json.dumps(router_aaa_users, indent=4))
+# -------------------------------------------------------------------------
