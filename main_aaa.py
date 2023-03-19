@@ -71,14 +71,14 @@ def main_aaa():
             list_aaa_user_info.append(users_info)
 
             connection.disconnect()
-            print('\033[92m' + "Done." + '\033[0m')
+            print("Done.")
         # authentication error
         except auth_error:
-            print('\033[91m' + "Failed." + '\033[0m')
+            print("Failed.")
             print(f"\n===>> Authentication Failed to {device['RouterName']}, {device['IPAddress']}\n")
             list_errors.append(f"{device['RouterName']},{device['IPAddress']},Authentication Failed\n")
         except timeout_error:
-            print('\033[91m' + "Failed." + '\033[0m')
+            print("Failed.")
             print(f"\n===>> Connection Timeout to {device['RouterName']}, {device['IPAddress']}\n")
             list_errors.append(f"{device['RouterName']},{device['IPAddress']},Connection Timeout")
     # list of each router with its own users and info
