@@ -1,11 +1,3 @@
-"""
-This code is for extracting AAA users information
-like username password and service type and the privilege 
-that they have.
-The script uses netmiko to connect to Routers via ssh.
-The script is mainly used for HUAWEI Routers but it can be modified to other vendors.
-"""
-
 from get_aaa_users_info import get_aaa_users_info
 from get_credentials import credentials
 from get_list_router import get_list_router
@@ -16,6 +8,7 @@ import signal
 import netmiko
 import datetime
 import time
+import json
 
 
 # get date and time
@@ -31,11 +24,26 @@ signal.signal(signal.SIGINT, signal.SIG_DFL)
 try:
     router_list = get_list_router(sys.argv[1])
 except IndexError:
-    print("please entre a valide csv file!")
+    print("\n===>> Please entre a valide csv file!\n")
     exit()
 
+# connction type to use to connect to routers telnet or ssh
+i = 0
+while i < 3:
+    connection_type = str(
+        input("\n|-- connection type, choose Telnet or SSH: "))
+    if connection_type.lower() == "Telnet".lower() or connection_type.lower() == "SSH".lower():
+        break
+    else:
+        print(
+            "\n\033[91m ====>> Typing ERROR: Please type SSH or Telnet! \033[0m")
+        i += 1
 
-# handeling error
+    if i == 3:
+        exit()
+
+
+# handeling error for ssh
 auth_error = netmiko.exceptions.NetmikoAuthenticationException
 timeout_error = netmiko.exceptions.NetmikoTimeoutException
 
@@ -57,11 +65,19 @@ def main_aaa():
 
     for device in router_list:
         try:
-            print(
-                f"\n|------ connecting to {device['RouterName']}, {device['IPAddress']} ... ", end="")
-            # connect to router via ssh
-            connection = netmiko.ConnectHandler(
-                ip=device["IPAddress"], device_type="huawei", username=username, password=password)
+            # connect to router via ssh or telnet
+            # this code is add after a change on the source code of netmiko
+            if connection_type.lower() == "SSH".lower():
+                print(
+                    f"\n|------ connecting to {device['RouterName']}, {device['IPAddress']} ...", end="")
+                connection = netmiko.ConnectHandler(
+                    ip=device["IPAddress"], device_type="huawei", username=username, password=password)
+            elif connection_type.lower() == "Telnet".lower():
+                print(
+                    f"\n|------ connecting to {device['RouterName']}, {device['IPAddress']} ...", end="")
+                connection = netmiko.ConnectHandler(
+                    ip=device["IPAddress"], device_type="huawei_telnet", username=username, password=password)
+            # store command output to parse
             output = connection.send_command(COMMAND_LINE)
 
             # call function to parse the output to dict
@@ -73,25 +89,44 @@ def main_aaa():
 
             connection.disconnect()
             print('\033[92m' + "Done.\n" + '\033[0m')
-        # authentication error
+        # handling connection error for ssh
         except auth_error:
-            print('\033[91m' + "Failed." + '\033[0m')
+            print('\033[91m' + "Failed.\n" + '\033[0m')
             print(
-                f"\n===>> Authentication Failed to {device['RouterName']}, {device['IPAddress']}\n")
+                f"\033[91m \n===>> Authentication Failed to {device['RouterName']}, {device['IPAddress']} \033[0m\n")
             list_errors.append(
                 f"{device['RouterName']},{device['IPAddress']},Authentication Failed\n")
         except timeout_error:
             print('\033[91m' + "Failed." + '\033[0m')
             print(
+                f"\033[91m \n===>> Connection Timeout to {device['RouterName']}, {device['IPAddress']} \033[0m \n")
+            list_errors.append(
+                f"{device['RouterName']},{device['IPAddress']},Connection Timeout\n")
+        # handling connection error for telnet
+        except netmiko.exceptions.ReadTimeout:
+            print("Failed.\n")
+            print(
+                f"\033[91m \n===>> Authentication Failed to {device['RouterName']}, {device['IPAddress']} \033[0m\n")
+            list_errors.append(
+                f"{device['RouterName']},{device['IPAddress']},Authentication Failed\n")
+        except ConnectionResetError:
+            print('\033[91m' + "Failed." + '\033[0m')
+            print(
+                f"\n===>> Connectio Reset to {device['RouterName']}, {device['IPAddress']}\n")
+            list_errors.append(
+                f"{device['RouterName']},{device['IPAddress']},Authentication Failed\n")
+        except TimeoutError:
+            print('\033[91m' + "Failed." + '\033[0m')
+            print(
                 f"\n===>> Connection Timeout to {device['RouterName']}, {device['IPAddress']}\n")
             list_errors.append(
-                f"{device['RouterName']},{device['IPAddress']},Connection Timeout")
+                f"{device['RouterName']},{device['IPAddress']},Connection Timeout\n")
+
     # list of each router with its own users and info
     return list_aaa_user_info
 
-# pprint(main_aaa())
 
-
+# store users in var to export to csv & json file
 router_aaa_users = main_aaa()
 
 # --------------------------- export user aaa to csv file -----------------
