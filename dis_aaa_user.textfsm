@@ -1,0 +1,11 @@
+Value Filldown HOST ((\w-?)+)
+Value USER (\w+)
+Value PASS (\S+)
+Value SRV ((\w\s?)+)
+Value Required Level (\d+)
+
+Start
+ ^<${HOST}>
+ ^\s+local-user ${USER} password (\w-?)+ ${PASS}
+ ^\s+local-user ${USER} service-type ${SRV} 
+ ^\s+local-user ${USER} level ${Level} -> Record
