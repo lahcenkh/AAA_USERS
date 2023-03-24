@@ -2,6 +2,7 @@ from get_aaa_users_info import get_aaa_users_info
 from get_credentials import credentials
 from get_list_router import get_list_router
 from pprint import pprint
+from tabulate import tabulate
 import sys
 import csv
 import signal
@@ -79,16 +80,12 @@ def main_aaa():
                     f"\n|------ connecting to {device['RouterName']}, {device['IPAddress']} ...", end="")
                 connection = netmiko.ConnectHandler(
                     ip=device["IPAddress"], device_type="huawei_telnet", username=username, password=password)
+
             # store command output to parse
             output = connection.send_command(COMMAND_LINE,use_textfsm=True,textfsm_template=template)
-
-            # call function to parse the output to dict
-            # users_info = get_aaa_users_info(
-            #     output=output, router_name=connection.base_prompt)
-
-            users_info = output
-            # store each Router user in list
-            list_aaa_user_info.append(users_info)
+            
+            for host in output:
+                host["host"] = connection.base_prompt
 
             connection.disconnect()
             print('\033[92m' + "Done.\n" + '\033[0m')
@@ -126,36 +123,10 @@ def main_aaa():
                 f"{device['RouterName']},{device['IPAddress']},Connection Timeout\n")
 
     # list of each router with its own users and info
-    return list_aaa_user_info
+    return output
 
 
 # store users in var to export to csv & json file
 router_aaa_users = main_aaa()
 
-print(router_aaa_users)
-# # --------------------------- export user aaa to csv file -----------------
-# if router_aaa_users != []:
-#     with open(f"Report_AAA_{current_date}_{current_time}.csv", "w") as report:
-#         report.write("RouterName\tUserName\tPassword\tServiceType\tLevel\n")
-#         # write to csv file
-#         for routers_list in router_aaa_users:
-#             for router in routers_list.values():
-#                 for user in router.keys():
-#                     report.write(
-#                         f"{router[user]['Hostname']}\t{router[user]['Username']}\t{router[user]['Password']}\t{router[user]['Service-type']}\t{router[user]['Level']}\n")
-# # -------------------------------------------------------------------------
-
-# # --------------------------- export errors to csv file -------------------
-# if list_errors != []:
-#     with open(f"log_errors_{current_date}_{current_time}.csv", "w") as f_error:
-#         f_error.write("RouterName,IPAddress,ERROR\n")
-#         for error in list_errors:
-#             f_error.write(error)
-
-# # -------------------------------------------------------------------------
-
-# # --------------------------- export router_aaa_users to json file --------
-# if router_aaa_users != []:
-#     with open("list_aaa_user.json", "w") as json_f:
-#         json_f.write(json.dumps(router_aaa_users, indent=4))
-# # -------------------------------------------------------------------------
+print(tabulate(router_aaa_users, headers="keys"))
