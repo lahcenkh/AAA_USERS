@@ -1,4 +1,3 @@
-from get_aaa_users_info import get_aaa_users_info
 from get_credentials import credentials
 from get_list_router import get_list_router
 from pprint import pprint
@@ -84,6 +83,7 @@ def main_aaa():
             # store command output to parse
             output = connection.send_command(COMMAND_LINE,use_textfsm=True,textfsm_template=template)
             
+            #add hostname to the output
             for host in output:
                 host["host"] = connection.base_prompt
 
