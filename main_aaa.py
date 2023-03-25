@@ -83,10 +83,15 @@ def main_aaa():
             # store command output to parse
             output = connection.send_command(COMMAND_LINE,use_textfsm=True,textfsm_template=template)
             
-            #add hostname to the output
+            #add hostname to the output 
             for host in output:
                 host["routername"] = connection.base_prompt
-
+                if host["level"] == "":
+                    host["level"] = "none"
+            # extract items of output from list
+            for user in output:
+                list_aaa_user_info.append(user)
+        
             connection.disconnect()
             print('\033[92m' + "Done.\n" + '\033[0m')
         # handling connection error for ssh
@@ -123,9 +128,33 @@ def main_aaa():
                 f"{device['RouterName']},{device['IPAddress']},Connection Timeout\n")
 
     # list of each router with its own users and info
-    return output
+    return list_aaa_user_info
 
 
 # store users in var to export to csv & json file
 router_aaa_users = main_aaa()
+
+# printe table
 print(tabulate(router_aaa_users, headers="keys"))
+
+# --------------------------- export user aaa to csv file -----------------
+if router_aaa_users != []:
+    with open(f"Report_AAA_{current_date}_{current_time}.csv", "w") as report:
+        report.write("RouterName\tUserName\tPassword\tServiceType\tLevel\n")
+        for user in router_aaa_users:
+            report.write(f'{user["routername"]}\t{user["username"]}\t{user["password"]}\t{user["servicetype"]}\t{user["level"]}\n')
+
+# --------------------------- export errors to csv file -------------------
+if list_errors != []:
+    with open(f"log_errors_{current_date}_{current_time}.csv", "w") as f_error:
+        f_error.write("RouterName,IPAddress,ERROR\n")
+        for error in list_errors:
+            f_error.write(error)
+
+# -------------------------------------------------------------------------
+
+# --------------------------- export router_aaa_users to json file --------
+if router_aaa_users != []:
+    with open("list_aaa_user.json", "w") as json_f:
+        json_f.write(json.dumps(router_aaa_users, indent=4))
+# -------------------------------------------------------------------------
