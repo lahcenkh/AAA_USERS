@@ -85,7 +85,7 @@ def main_aaa():
             
             #add hostname to the output
             for host in output:
-                host["host"] = connection.base_prompt
+                host["routername"] = connection.base_prompt
 
             connection.disconnect()
             print('\033[92m' + "Done.\n" + '\033[0m')
@@ -128,5 +128,5 @@ def main_aaa():
 
 # store users in var to export to csv & json file
 router_aaa_users = main_aaa()
-
+pprint(router_aaa_users)
 print(tabulate(router_aaa_users, headers="keys"))

@@ -1,11 +1,11 @@
-Value Filldown HOST ((\w-?)+)
-Value USER (\w+)
-Value PASS (\S+)
-Value Required SRV ((\w\s?)+)
+Value Filldown RouterName ((\w-?)+)
+Value UserName (\w+)
+Value Password (\S+)
+Value Required ServiceType ((\w\s?)+)
 Value Level (\d+)
 
 Start
- ^<${HOST}>
- ^\s+local-user ${USER} password (\w-?)+ ${PASS}
- ^\s+local-user ${USER} service-type ${SRV} 
+ ^<${RouterName}>
+ ^\s+local-user ${UserName} password (\w-?)+ ${Password}
+ ^\s+local-user ${UserName} service-type ${ServiceType} 
  ^(\s+local-user \w+ level ${Level})? -> Record
