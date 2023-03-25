@@ -9,6 +9,7 @@ import datetime
 import time
 import json
 import csv
+import click
 
 
 # get date and time
@@ -26,9 +27,6 @@ def get_list_router(filename):
     # get file name from argement command line
     # path of list of routers
     file_path_routers = filename
-    if file_path_routers.endswith(".csv"):
-        pass
-
     # hold list of routers in list
     router_list = list()
 
@@ -46,7 +44,11 @@ def get_list_router(filename):
 # get list of router from csv file
 # Note file name is passed throught aregment command line
 try:
-    router_list = get_list_router(sys.argv[1])
+    if sys.argv[1].endswith(".csv"):
+        router_list = get_list_router(sys.argv[1])
+    else:
+        print("\n===>> Please file foramt should be csv extantion!\n")
+        exit()
 except IndexError:
     print("\n===>> Please entre a valide csv file!\n")
     exit()
