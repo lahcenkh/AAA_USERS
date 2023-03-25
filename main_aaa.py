@@ -19,15 +19,15 @@ current_date = datetime.date.today()
 # handle ctrl + c entreption
 signal.signal(signal.SIGINT, signal.SIG_DFL)
 
+# ------------------------ list of router in csv file ---------------------------
 
-#------------------------ list of router in csv file ---------------------------
+
 def get_list_router(filename):
-# get file name from argement command line
-        # path of list of routers
+    # get file name from argement command line
+    # path of list of routers
     file_path_routers = filename
     if file_path_routers.endswith(".csv"):
         pass
-
 
     # hold list of routers in list
     router_list = list()
@@ -38,9 +38,10 @@ def get_list_router(filename):
         for dev in r:
             # create dict() and append it to router_list var
             router_list.append({"RouterName": dev[0], "IPAddress": dev[1]})
-    
+
     return router_list
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
+
 
 # get list of router from csv file
 # Note file name is passed throught aregment command line
@@ -73,24 +74,27 @@ timeout_error = netmiko.exceptions.NetmikoTimeoutException
 # storing errors
 list_errors = list()
 
-#------------ geting username and password -------------------------------------
+# ------------ geting username and password -------------------------------------
+
+
 def credentials():
     i = 0
     while i < 3:
         username = input("|-- Entre your Userame: ")
         if username.strip() != '':
-            password = getpass(prompt="|-- Entre your Password: ") 
+            password = getpass(prompt="|-- Entre your Password: ")
             break
         i += 1
         if i == 3:
             exit()
     return username, password
 
+
 # get username and password from the user
 username, password = credentials()
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 
-#templet to parse the output
+# templet to parse the output
 template = "dis_aaa_user.textfsm"
 
 # -------------------- Command aaa ------------------------------
@@ -118,9 +122,10 @@ def main_aaa():
                     ip=device["IPAddress"], device_type="huawei_telnet", username=username, password=password)
 
             # store command output to parse
-            output = connection.send_command(COMMAND_LINE,use_textfsm=True,textfsm_template=template)
-            
-            #add hostname to the output 
+            output = connection.send_command(
+                COMMAND_LINE, use_textfsm=True, textfsm_template=template)
+
+            # add hostname to the output
             for host in output:
                 host["routername"] = connection.base_prompt
                 if host["level"] == "":
@@ -128,7 +133,7 @@ def main_aaa():
             # extract items of output from list
             for user in output:
                 list_aaa_user_info.append(user)
-        
+
             connection.disconnect()
             print('\033[92m' + "Done.\n" + '\033[0m')
         # handling connection error for ssh
@@ -179,7 +184,8 @@ if router_aaa_users != []:
     with open(f"Report_AAA_{current_date}_{current_time}.csv", "w") as report:
         report.write("RouterName\tUserName\tPassword\tServiceType\tLevel\n")
         for user in router_aaa_users:
-            report.write(f'{user["routername"]}\t{user["username"]}\t{user["password"]}\t{user["servicetype"]}\t{user["level"]}\n')
+            report.write(
+                f'{user["routername"]}\t{user["username"]}\t{user["password"]}\t{user["servicetype"]}\t{user["level"]}\n')
 
 # --------------------------- export errors to csv file -------------------
 if list_errors != []:
