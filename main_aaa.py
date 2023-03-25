@@ -128,5 +128,4 @@ def main_aaa():
 
 # store users in var to export to csv & json file
 router_aaa_users = main_aaa()
-pprint(router_aaa_users)
 print(tabulate(router_aaa_users, headers="keys"))
