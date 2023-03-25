@@ -1,7 +1,6 @@
-from get_credentials import credentials
-from get_list_router import get_list_router
 from pprint import pprint
 from tabulate import tabulate
+from getpass import getpass
 import sys
 import csv
 import signal
@@ -9,6 +8,7 @@ import netmiko
 import datetime
 import time
 import json
+import csv
 
 
 # get date and time
@@ -18,6 +18,29 @@ current_date = datetime.date.today()
 
 # handle ctrl + c entreption
 signal.signal(signal.SIGINT, signal.SIG_DFL)
+
+
+#------------------------ list of router in csv file ---------------------------
+def get_list_router(filename):
+# get file name from argement command line
+        # path of list of routers
+    file_path_routers = filename
+    if file_path_routers.endswith(".csv"):
+        pass
+
+
+    # hold list of routers in list
+    router_list = list()
+
+    with open(file_path_routers, "r") as router_f:
+        r = csv.reader(router_f)
+        next(r)
+        for dev in r:
+            # create dict() and append it to router_list var
+            router_list.append({"RouterName": dev[0], "IPAddress": dev[1]})
+    
+    return router_list
+#-------------------------------------------------------------------------------
 
 # get list of router from csv file
 # Note file name is passed throught aregment command line
@@ -50,8 +73,22 @@ timeout_error = netmiko.exceptions.NetmikoTimeoutException
 # storing errors
 list_errors = list()
 
+#------------ geting username and password -------------------------------------
+def credentials():
+    i = 0
+    while i < 3:
+        username = input("|-- Entre your Userame: ")
+        if username.strip() != '':
+            password = getpass(prompt="|-- Entre your Password: ") 
+            break
+        i += 1
+        if i == 3:
+            exit()
+    return username, password
+
 # get username and password from the user
 username, password = credentials()
+#-------------------------------------------------------------------------------
 
 #templet to parse the output
 template = "dis_aaa_user.textfsm"
