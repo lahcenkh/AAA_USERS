@@ -102,20 +102,36 @@ template = "dis_aaa_user.textfsm"
 COMMAND_LINE = "display current-configuration configuration aaa"
 # ---------------------------------------------------------------
 
+def spinning_cursor():
+  while True:
+    for cursor in '=' * 5:
+      time.sleep(0.1)
+      yield cursor
+
 
 def main_aaa():
     # store list of Router with thier users info
     list_aaa_user_info = list()
     
+    spinner = spinning_cursor()
+
     for device in router_list:
         try:
             # connect to router via ssh or telnet
             # this code is add after a change on the source code of netmiko
             if connection_type.lower() == "SSH".lower():
-                print(f"\n|------ connecting to {device['RouterName']}, {device['IPAddress']} ...", end="")
+                # progress bar
+                print(f'|------ connecting to {device["RouterName"]}, {device["IPAddress"]} \t |', end='', flush=True)
+                for i in range(10):
+                    time.sleep(0.1)
+                    print(next(spinner), end='', flush=True)
                 connection = netmiko.ConnectHandler(ip=device["IPAddress"], device_type="huawei", username=username, password=password)
             elif connection_type.lower() == "Telnet".lower():
-                print(f"\n|------ connecting to {device['RouterName']}, {device['IPAddress']} ...", end="")
+                # progress Bar
+                print(f'|------ connecting to {device["RouterName"]}, {device["IPAddress"]} \t |', end='', flush=True)
+                for i in range(10):
+                    time.sleep(0.1)
+                    print(next(spinner), end='', flush=True)
                 connection = netmiko.ConnectHandler(ip=device["IPAddress"], device_type="huawei_telnet", username=username, password=password)
             # store command output to parse
             output = connection.send_command(COMMAND_LINE, use_textfsm=True, textfsm_template=template)
@@ -129,37 +145,37 @@ def main_aaa():
                 list_aaa_user_info.append(user)
 
             connection.disconnect()
-            print('\033[92m' + "Done.\n" + '\033[0m')
+            print('|' + '\033[92m' + " Done.\n" + '\033[0m')
         # handling connection error for ssh
         except auth_error:
-            print('\033[91m' + "Failed.\n" + '\033[0m')
-            print(
-                f"\033[91m \n===>> Authentication Failed to {device['RouterName']}, {device['IPAddress']} \033[0m\n")
+            print( '|' + '\033[91m' + " Failed." + '\033[0m')
+            # print(
+            #     f"\033[91m \n===>> Authentication Failed to {device['RouterName']}, {device['IPAddress']} \033[0m\n")
             list_errors.append(
                 f"{device['RouterName']},{device['IPAddress']},Authentication Failed\n")
         except timeout_error:
-            print('\033[91m' + "Failed." + '\033[0m')
-            print(
-                f"\033[91m \n===>> Connection Timeout to {device['RouterName']}, {device['IPAddress']} \033[0m \n")
+            print( '|' + '\033[91m' + " Failed." + '\033[0m')
+            # print(
+            #     f"\033[91m \n===>> Connection Timeout to {device['RouterName']}, {device['IPAddress']} \033[0m \n")
             list_errors.append(
                 f"{device['RouterName']},{device['IPAddress']},Connection Timeout\n")
         # handling connection error for telnet
         except netmiko.exceptions.ReadTimeout:
-            print("Failed.\n")
-            print(
-                f"\033[91m \n===>> Authentication Failed to {device['RouterName']}, {device['IPAddress']} \033[0m\n")
+            print( '|' + '\033[91m' + " Failed." + '\033[0m')
+            # print(
+            #     f"\033[91m \n===>> Authentication Failed to {device['RouterName']}, {device['IPAddress']} \033[0m\n")
             list_errors.append(
                 f"{device['RouterName']},{device['IPAddress']},Authentication Failed\n")
         except ConnectionResetError:
-            print('\033[91m' + "Failed." + '\033[0m')
-            print(
-                f"\n===>> Connectio Reset to {device['RouterName']}, {device['IPAddress']}\n")
+            print( '|' + '\033[91m' + " Failed." + '\033[0m')
+            # print(
+            #     f"\n===>> Connectio Reset to {device['RouterName']}, {device['IPAddress']}\n")
             list_errors.append(
                 f"{device['RouterName']},{device['IPAddress']},Authentication Failed\n")
         except TimeoutError:
-            print('\033[91m' + "Failed." + '\033[0m')
-            print(
-                f"\n===>> Connection Timeout to {device['RouterName']}, {device['IPAddress']}\n")
+            print( '|' + '\033[91m' + " Failed." + '\033[0m')
+            # print(
+            #     f"\n===>> Connection Timeout to {device['RouterName']}, {device['IPAddress']}\n")
             list_errors.append(
                 f"{device['RouterName']},{device['IPAddress']},Connection Timeout\n")
 
