@@ -9,7 +9,7 @@ import datetime
 import time
 import json
 import csv
-import click
+from tqdm import tqdm
 
 
 # get date and time
@@ -21,7 +21,6 @@ current_date = datetime.date.today()
 signal.signal(signal.SIGINT, signal.SIG_DFL)
 
 # ------------------------ list of router in csv file ---------------------------
-
 
 def get_list_router(filename):
     # get file name from argement command line
@@ -107,26 +106,19 @@ COMMAND_LINE = "display current-configuration configuration aaa"
 def main_aaa():
     # store list of Router with thier users info
     list_aaa_user_info = list()
-
+    
     for device in router_list:
         try:
             # connect to router via ssh or telnet
             # this code is add after a change on the source code of netmiko
             if connection_type.lower() == "SSH".lower():
-                print(
-                    f"\n|------ connecting to {device['RouterName']}, {device['IPAddress']} ...", end="")
-                connection = netmiko.ConnectHandler(
-                    ip=device["IPAddress"], device_type="huawei", username=username, password=password)
+                print(f"\n|------ connecting to {device['RouterName']}, {device['IPAddress']} ...", end="")
+                connection = netmiko.ConnectHandler(ip=device["IPAddress"], device_type="huawei", username=username, password=password)
             elif connection_type.lower() == "Telnet".lower():
-                print(
-                    f"\n|------ connecting to {device['RouterName']}, {device['IPAddress']} ...", end="")
-                connection = netmiko.ConnectHandler(
-                    ip=device["IPAddress"], device_type="huawei_telnet", username=username, password=password)
-
+                print(f"\n|------ connecting to {device['RouterName']}, {device['IPAddress']} ...", end="")
+                connection = netmiko.ConnectHandler(ip=device["IPAddress"], device_type="huawei_telnet", username=username, password=password)
             # store command output to parse
-            output = connection.send_command(
-                COMMAND_LINE, use_textfsm=True, textfsm_template=template)
-
+            output = connection.send_command(COMMAND_LINE, use_textfsm=True, textfsm_template=template)
             # add hostname to the output
             for host in output:
                 host["routername"] = connection.base_prompt
