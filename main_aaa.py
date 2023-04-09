@@ -29,11 +29,11 @@ def get_list_router(filename):
     router_list = list()
 
     with open(file_path_routers, "r") as router_f:
-        r = csv.reader(router_f)
+        r = csv.DictReader(router_f)
         next(r)
         for dev in r:
             # create dict() and append it to router_list var
-            router_list.append({"RouterName": dev[0], "IPAddress": dev[1]})
+            router_list.append({"RouterName": dev['RouterName'], "IPAddress": dev['IPAddress']})
 
     return router_list
 # -------------------------------------------------------------------------------
